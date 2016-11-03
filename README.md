@@ -1,2 +1,2 @@
 # blogger
-for https://qbsuranalang.blogspot.com
+for http://qbsuranalang.blogspot.com
