@@ -1,7 +1,7 @@
 
 CC = gcc
 
-PROGS = list-devices default-device
+PROGS = list-devices default-device capture-pcap_loop-and-pcap_dispatch
 
 PCAP_DIR = /usr/local/opt/libpcap
 CFLAGS = -I$(PCAP_DIR)/include -Wall -std=gnu99
