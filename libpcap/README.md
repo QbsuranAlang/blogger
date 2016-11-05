@@ -9,3 +9,6 @@ Get default device name.
 
 ## capture-pcap\_loop-and-pcap\_dispatch.c
 Capture frame using pcap\_loop() and pcap\_dispatch().
+
+## capture-pcap\_next\_ex.c
+Capture frame using pcap\_next\_ex().
