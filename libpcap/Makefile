@@ -4,7 +4,8 @@ CC = gcc
 PROGS = list-devices \
 	default-device \
 	capture-pcap_loop-and-pcap_dispatch \
-	capture-pcap_next_ex
+	capture-pcap_next_ex \
+	save-to-file
 
 PCAP_DIR = /usr/local/opt/libpcap
 CFLAGS = -I$(PCAP_DIR)/include -Wall -std=gnu99
@@ -15,3 +16,4 @@ all: ${PROGS}
 
 clean:
 	rm -f ${PROGS}
+	rm -f saved.pcap
