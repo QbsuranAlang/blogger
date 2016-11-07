@@ -5,7 +5,8 @@ PROGS = list-devices \
 	default-device \
 	capture-pcap_loop-and-pcap_dispatch \
 	capture-pcap_next_ex \
-	save-to-file
+	save-to-file \
+	read-from-file
 
 PCAP_DIR = /usr/local/opt/libpcap
 CFLAGS = -I$(PCAP_DIR)/include -Wall -std=gnu99

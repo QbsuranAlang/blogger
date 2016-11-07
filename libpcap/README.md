@@ -15,3 +15,6 @@ Capture frame using pcap\_next\_ex().
 
 ## save-to-file.c
 Save frames to file.
+
+## read-from-file.c
+Read frames from file.
