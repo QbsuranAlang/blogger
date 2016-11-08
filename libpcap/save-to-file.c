@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <pcap.h>
 
-void pcap_callback(u_char *arg, const struct pcap_pkthdr *header, const u_char *content);
+static void pcap_callback(u_char *arg, const struct pcap_pkthdr *header, const u_char *content);
 
 int main(int argc, const char * argv[]) {
     char errbuf[PCAP_ERRBUF_SIZE];
@@ -59,7 +59,7 @@ int main(int argc, const char * argv[]) {
     return 0;
 }//end main
 
-void pcap_callback(u_char *arg, const struct pcap_pkthdr *header, const u_char *content) {
+static void pcap_callback(u_char *arg, const struct pcap_pkthdr *header, const u_char *content) {
     static int d = 0;
     printf("\rNo.%5d captured", ++d);
     fflush(stdout);

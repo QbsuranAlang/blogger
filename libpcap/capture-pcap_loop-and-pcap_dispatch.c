@@ -11,8 +11,8 @@
 #include <pcap.h>
 #include <time.h>
 
-void pcap_callback1(u_char *arg, const struct pcap_pkthdr *header, const u_char *content);
-void pcap_callback2(u_char *arg, const struct pcap_pkthdr *header, const u_char *content);
+static void pcap_callback1(u_char *arg, const struct pcap_pkthdr *header, const u_char *content);
+static void pcap_callback2(u_char *arg, const struct pcap_pkthdr *header, const u_char *content);
 
 int main(int argc, const char * argv[]) {
     char errbuf[PCAP_ERRBUF_SIZE];
@@ -55,12 +55,12 @@ int main(int argc, const char * argv[]) {
     return 0;
 }//end main
 
-void pcap_callback1(u_char *arg, const struct pcap_pkthdr *header, const u_char *content) {
+static void pcap_callback1(u_char *arg, const struct pcap_pkthdr *header, const u_char *content) {
     static int d = 0;
     printf("%3d: captured\n", ++d);
 }//end pcap_callback1
 
-void pcap_callback2(u_char *arg, const struct pcap_pkthdr *header, const u_char *content) {
+static void pcap_callback2(u_char *arg, const struct pcap_pkthdr *header, const u_char *content) {
     static int d = 0;
     
     printf("No. %3d\n", ++d);

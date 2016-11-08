@@ -18,3 +18,6 @@ Save frames to file.
 
 ## read-from-file.c
 Read frames from file.
+
+## dump-ethernet.c
+Dump Ethernet frame header.
