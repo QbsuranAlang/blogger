@@ -143,7 +143,7 @@ static void dump_ethernet(u_int32_t length, const u_char *content) {
             break;
             
         default:
-            printf("%#06x", type);
+            printf("%#06x\n", type);
             break;
     }//end switch
 }//end dump_ethernet
