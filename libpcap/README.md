@@ -21,3 +21,6 @@ Read frames from file.
 
 ## dump-ethernet.c
 Dump Ethernet frame header.
+
+## dump-arp.c
+Dump ARP frame header.
