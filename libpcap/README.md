@@ -24,3 +24,6 @@ Dump Ethernet frame header.
 
 ## dump-arp.c
 Dump ARP frame header.
+
+## dump-ip.c
+Dump IP packet header.

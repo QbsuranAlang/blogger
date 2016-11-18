@@ -8,7 +8,8 @@ PROGS = list-devices \
 	save-to-file \
 	read-from-file \
 	dump-ethernet \
-	dump-arp
+	dump-arp \
+	dump-ip
 
 PCAP_DIR = /usr/local/opt/libpcap
 CFLAGS = -I$(PCAP_DIR)/include -Wall -std=gnu99
