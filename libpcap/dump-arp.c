@@ -111,7 +111,7 @@ static const char *ip_ntoa(void *i) {
 
     which = (which + 1 == STR_BUF ? 0 : which + 1);
     
-    memset(ip[which], 0, MAC_ADDRSTRLEN);
+    memset(ip[which], 0, INET_ADDRSTRLEN);
     inet_ntop(AF_INET, i, ip[which], sizeof(ip[which]));
     
     return ip[which];
@@ -148,8 +148,8 @@ static void dump_ethernet(u_int32_t length, const u_char *content) {
     struct ether_header *ethernet = (struct ether_header *)content;
 
     //copy header
-    snprintf(dst_mac, sizeof(dst_mac), "%*s", MAC_ADDRSTRLEN - 1, mac_ntoa(ethernet->ether_dhost));
-    snprintf(src_mac, sizeof(src_mac), "%*s", MAC_ADDRSTRLEN - 1, mac_ntoa(ethernet->ether_shost));
+    snprintf(dst_mac, sizeof(dst_mac), "%s", mac_ntoa(ethernet->ether_dhost));
+    snprintf(src_mac, sizeof(src_mac), "%s", mac_ntoa(ethernet->ether_shost));
     type = ntohs(ethernet->ether_type);
     
     //print
@@ -208,15 +208,15 @@ static void dump_arp(u_int32_t length, const u_char *content) {
     struct ether_arp *arp = (struct ether_arp *)(content + ETHER_HDR_LEN);
 
     //copy header
-    hdr_type = ntohs(arp->ea_hdr.ar_hrd);
-    pro_type = ntohs(arp->ea_hdr.ar_pro);
-    hdr_len = arp->ea_hdr.ar_hln;
-    pro_len = arp->ea_hdr.ar_pln;
-    op = ntohs(arp->ea_hdr.ar_op);
-    snprintf(sender_mac, sizeof(sender_mac), "%*s", MAC_ADDRSTRLEN - 1, mac_ntoa(arp->arp_sha));
-    snprintf(sender_ip, sizeof(sender_ip), "%*s", INET_ADDRSTRLEN - 1, ip_ntoa(arp->arp_spa));
-    snprintf(target_mac, sizeof(target_mac), "%*s", MAC_ADDRSTRLEN - 1, mac_ntoa(arp->arp_tha));
-    snprintf(target_ip, sizeof(target_ip), "%*s", INET_ADDRSTRLEN - 1, ip_ntoa(arp->arp_tpa));
+    hdr_type = ntohs(arp->arp_hrd);
+    pro_type = ntohs(arp->arp_pro);
+    hdr_len = arp->arp_hln;
+    pro_len = arp->arp_pln;
+    op = ntohs(arp->arp_op);
+    snprintf(sender_mac, sizeof(sender_mac), "%s", mac_ntoa(arp->arp_sha));
+    snprintf(sender_ip, sizeof(sender_ip), "%s", ip_ntoa(arp->arp_spa));
+    snprintf(target_mac, sizeof(target_mac), "%s", mac_ntoa(arp->arp_tha));
+    snprintf(target_ip, sizeof(target_ip), "%s", ip_ntoa(arp->arp_tpa));
 
     static char *arp_op_name[] = {
         "Undefine",

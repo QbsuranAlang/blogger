@@ -10,7 +10,8 @@ PROGS = list-devices \
 	dump-ethernet \
 	dump-arp \
 	dump-ip \
-	dump-tcp-and-udp
+	dump-tcp-and-udp \
+	dump-icmp
 
 PCAP_DIR = /usr/local/opt/libpcap
 CFLAGS = -I$(PCAP_DIR)/include -Wall -std=gnu99

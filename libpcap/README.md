@@ -30,3 +30,6 @@ Dump IP packet header.
 
 ## dump-tcp-and-udp.c
 Dump TCP segment and UDP datagram header.
+
+## dump-icmp.c
+Dump ICMP datagram header.

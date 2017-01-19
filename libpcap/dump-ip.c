@@ -112,7 +112,7 @@ static const char *ip_ntoa(void *i) {
 
     which = (which + 1 == STR_BUF ? 0 : which + 1);
     
-    memset(ip[which], 0, MAC_ADDRSTRLEN);
+    memset(ip[which], 0, INET_ADDRSTRLEN);
     inet_ntop(AF_INET, i, ip[which], sizeof(ip[which]));
     
     return ip[which];
@@ -187,8 +187,8 @@ static void dump_ethernet(u_int32_t length, const u_char *content) {
     struct ether_header *ethernet = (struct ether_header *)content;
 
     //copy header
-    snprintf(dst_mac, sizeof(dst_mac), "%*s", MAC_ADDRSTRLEN - 1, mac_ntoa(ethernet->ether_dhost));
-    snprintf(src_mac, sizeof(src_mac), "%*s", MAC_ADDRSTRLEN - 1, mac_ntoa(ethernet->ether_shost));
+    snprintf(dst_mac, sizeof(dst_mac), "%s", mac_ntoa(ethernet->ether_dhost));
+    snprintf(src_mac, sizeof(src_mac), "%s", mac_ntoa(ethernet->ether_shost));
     type = ntohs(ethernet->ether_type);
     
     //print
@@ -248,8 +248,8 @@ static void dump_ip(u_int32_t length, const u_char *content) {
     char dst_ip[INET_ADDRSTRLEN] = {0};
 
     //copy ip address
-    snprintf(src_ip, sizeof(src_ip), "%*s", INET_ADDRSTRLEN - 1, ip_ntoa(&ip->ip_src));
-    snprintf(dst_ip, sizeof(dst_ip), "%*s", INET_ADDRSTRLEN - 1, ip_ntoa(&ip->ip_dst));
+    snprintf(src_ip, sizeof(src_ip), "%s", ip_ntoa(&ip->ip_src));
+    snprintf(dst_ip, sizeof(dst_ip), "%s", ip_ntoa(&ip->ip_dst));
     
     //print
     printf("Protocol: IP\n");

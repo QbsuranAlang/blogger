@@ -1,9 +1,9 @@
 //
-//  dump-tcp-and-udp.c
+//  dump-icmp.c
 //  for http://qbsuranalang.blogspot.com
-//  Created by TUTU on 2016/11/18.
+//  Created by TUTU on 2016/11/23.
 //
-//  Dump TCP segment and UDP datagram header.
+//  Dump ICMP datagram header.
 //
 
 #include <stdio.h>
@@ -30,6 +30,7 @@
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
+#include <netinet/ip_icmp.h>
 
 #define MAC_ADDRSTRLEN 2*6+5+1
 #define STR_BUF 16
@@ -39,9 +40,11 @@ static const char *ip_ttoa(u_int8_t flag);
 static const char *ip_ftoa(u_int16_t flag);
 static const char *tcp_ftoa(u_int8_t flag);
 static void dump_ethernet(u_int32_t length, const u_char *content);
-static void dump_ip(u_int32_t length, const u_char *content);
-static void dump_tcp(u_int32_t length, const u_char *content);
-static void dump_udp(u_int32_t length, const u_char *content);
+static void dump_ip(struct ip *ip);
+static void dump_tcp(struct tcphdr *tcp);
+static void dump_tcp_mini(struct tcphdr *tcp);
+static void dump_udp(struct udphdr *udp);
+static void dump_icmp(struct icmp *icmp);
 static void pcap_callback(u_char *arg, const struct pcap_pkthdr *header, const u_char *content);
 
 int main(int argc, const char * argv[]) {
@@ -74,7 +77,7 @@ int main(int argc, const char * argv[]) {
     }//end if
     
     //compile filter
-    if(-1 == pcap_compile(handle, &fcode, "tcp or udp", 1, mask)) {
+    if(-1 == pcap_compile(handle, &fcode, "icmp", 1, mask)) {
         fprintf(stderr, "pcap_compile(): %s\n", pcap_geterr(handle));
         pcap_close(handle);
         exit(1);
@@ -240,7 +243,7 @@ static void dump_ethernet(u_int32_t length, const u_char *content) {
             
         case ETHERTYPE_IP:
             printf("IP\n");
-            dump_ip(length, content);
+            dump_ip((struct ip *)(content + ETHER_HDR_LEN));
             break;
             
         case ETHERTYPE_REVARP:
@@ -257,8 +260,9 @@ static void dump_ethernet(u_int32_t length, const u_char *content) {
     }//end switch
 }//end dump_ethernet
 
-static void dump_ip(u_int32_t length, const u_char *content) {
-    struct ip *ip = (struct ip *)(content + ETHER_HDR_LEN);
+static void dump_ip(struct ip *ip) {
+
+    //copy header
     u_int version = ip->ip_v;
     u_int header_len = ip->ip_hl << 2;
     u_char tos = ip->ip_tos;
@@ -292,19 +296,19 @@ static void dump_ip(u_int32_t length, const u_char *content) {
     printf("| Destination IP Address:            %15s|\n", dst_ip);
     printf("+---------------------------------------------------+\n");
     
+    char *p = (char *)ip + (ip->ip_hl << 2);
     switch (protocol) {
         case IPPROTO_UDP:
             printf("Next is UDP\n");
-            dump_udp(length, content);
             break;
             
         case IPPROTO_TCP:
             printf("Next is TCP\n");
-            dump_tcp(length, content);
             break;
             
         case IPPROTO_ICMP:
             printf("Next is ICMP\n");
+            dump_icmp((struct icmp *)p);
             break;
             
         default:
@@ -313,10 +317,8 @@ static void dump_ip(u_int32_t length, const u_char *content) {
     }//end switch
 }//end dump_ip
 
-static void dump_tcp(u_int32_t length, const u_char *content) {
-    struct ip *ip = (struct ip *)(content + ETHER_HDR_LEN);
-    struct tcphdr *tcp = (struct tcphdr *)(content + ETHER_HDR_LEN + (ip->ip_hl << 2));
-    
+static void dump_tcp(struct tcphdr *tcp) {
+
     //copy header
     u_int16_t source_port = ntohs(tcp->th_sport);
     u_int16_t destination_port = ntohs(tcp->th_dport);
@@ -343,10 +345,25 @@ static void dump_tcp(u_int32_t length, const u_char *content) {
     printf("+-------------------------+-------------------------+\n");
 }//end dump_tcp
 
-static void dump_udp(u_int32_t length, const u_char *content) {
-    struct ip *ip = (struct ip *)(content + ETHER_HDR_LEN);
-    struct udphdr *udp = (struct udphdr *)(content + ETHER_HDR_LEN + (ip->ip_hl << 2));
+static void dump_tcp_mini(struct tcphdr *tcp) {
     
+    //copy header
+    u_int16_t source_port = ntohs(tcp->th_sport);
+    u_int16_t destination_port = ntohs(tcp->th_dport);
+    u_int32_t sequence = ntohl(tcp->th_seq);
+    
+    //print
+    printf("Protocol: TCP\n");
+    printf("+-------------------------+-------------------------+\n");
+    printf("| Source Port:       %5u| Destination Port:  %5u|\n", source_port, destination_port);
+    printf("+-------------------------+-------------------------+\n");
+    printf("| Sequence Number:                        %10u|\n", sequence);
+    printf("+---------------------------------------------------+\n");
+}//end dump_tcp_mini
+
+static void dump_udp(struct udphdr *udp) {
+
+    //copy header
     u_int16_t source_port = ntohs(udp->uh_sport);
     u_int16_t destination_port = ntohs(udp->uh_dport);
     u_int16_t len = ntohs(udp->uh_ulen);
@@ -359,3 +376,102 @@ static void dump_udp(u_int32_t length, const u_char *content) {
     printf("| Length:            %5u| Checksum:          %5u|\n", len, checksum);
     printf("+-------------------------+-------------------------+\n");
 }//end dump_udp
+
+static void dump_icmp(struct icmp *icmp) {
+    
+    //copy header
+    u_char type = icmp->icmp_type;
+    u_char code = icmp->icmp_code;
+    u_char checksum = ntohs(icmp->icmp_cksum);
+    
+    static char *type_name[] = {
+        "Echo Reply",               /* Type  0 */
+        "Undefine",                 /* Type  1 */
+        "Undefine",                 /* Type  2 */
+        "Destination Unreachable",  /* Type  3 */
+        "Source Quench",            /* Type  4 */
+        "Redirect (change route)",  /* Type  5 */
+        "Undefine",                 /* Type  6 */
+        "Undefine",                 /* Type  7 */
+        "Echo Request",             /* Type  8 */
+        "Undefine",                 /* Type  9 */
+        "Undefine",                 /* Type 10 */
+        "Time Exceeded",            /* Type 11 */
+        "Parameter Problem",        /* Type 12 */
+        "Timestamp Request",        /* Type 13 */
+        "Timestamp Reply",          /* Type 14 */
+        "Information Request",      /* Type 15 */
+        "Information Reply",        /* Type 16 */
+        "Address Mask Request",     /* Type 17 */
+        "Address Mask Reply",       /* Type 18 */
+        "Unknown"                   /* Type 19 */
+    }; //icmp type
+#define ICMP_TYPE_MAX (sizeof type_name / sizeof type_name[0])
+    
+    if (type < 0 || ICMP_TYPE_MAX <= type)
+        type = ICMP_TYPE_MAX - 1;
+    
+    printf("Protocol: ICMP (%s)\n", type_name[type]);
+    
+    printf("+------------+------------+-------------------------+\n");
+    printf("| Type:   %3u| Code:   %3u| Checksum:          %5u|\n", type, code, checksum);
+    printf("+------------+------------+-------------------------+\n");
+    
+    if (type == ICMP_ECHOREPLY || type == ICMP_ECHO) {
+        printf("| Identification:    %5u| Sequence Number:   %5u|\n", ntohs(icmp->icmp_id), ntohs(icmp->icmp_seq));
+        printf("+-------------------------+-------------------------+\n");
+    }//end if
+    else if (type == ICMP_UNREACH) {
+        if (code == ICMP_UNREACH_NEEDFRAG) {
+            printf("| void:          %5u| Next MTU:          %5u|\n", ntohs(icmp->icmp_pmvoid), ntohs(icmp->icmp_nextmtu));
+            printf("+-------------------------+-------------------------+\n");
+        }//end if
+        else {
+            printf("| Unused:                                 %10lu|\n", (unsigned long) ntohl(icmp->icmp_void));
+            printf("+-------------------------+-------------------------+\n");
+        }//end else
+    }//end if
+    else if (type == ICMP_REDIRECT) {
+        printf("| Router IP Address:                 %15s|\n", ip_ntoa(&(icmp->icmp_gwaddr)));
+        printf("+---------------------------------------------------+\n");
+    }//end if
+    else if (type == ICMP_TIMXCEED) {
+        printf("| Unused:                                 %10lu|\n", (unsigned long)ntohl(icmp->icmp_void));
+        printf("+---------------------------------------------------+\n");
+    }//end else
+    
+    //if the icmp packet carry ip header
+    if (type == ICMP_UNREACH || type == ICMP_REDIRECT || type == ICMP_TIMXCEED) {
+        struct ip *ip = (struct ip *)icmp->icmp_data;
+        char *p = (char *)ip + (ip->ip_hl << 2);
+        dump_ip(ip);
+        
+        switch (ip->ip_p) {
+            case IPPROTO_TCP:
+                if(type == ICMP_REDIRECT) {
+                    /**
+                     * RFC 792: Page 12
+                     * 
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |     Type      |     Code      |          Checksum             |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                 Gateway Internet Address                      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |      Internet Header + 64 bits of Original Data Datagram      |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                     * only 8 bytes
+                     */
+                    dump_tcp_mini((struct tcphdr *)p);
+                }//end if
+                else {
+                    dump_tcp((struct tcphdr *)p);
+                }//end else
+                break;
+            case IPPROTO_UDP:
+                dump_udp((struct udphdr *)p);
+                break;
+        }//end switch
+    }//end if
+}//end dump_icmp

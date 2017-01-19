@@ -103,8 +103,8 @@ static void dump_ethernet(u_int32_t length, const u_char *content) {
     struct ether_header *ethernet = (struct ether_header *)content;
 
     //copy header
-    snprintf(dst_mac, sizeof(dst_mac), "%*s", MAC_ADDRSTRLEN - 1, mac_ntoa(ethernet->ether_dhost));
-    snprintf(src_mac, sizeof(src_mac), "%*s", MAC_ADDRSTRLEN - 1, mac_ntoa(ethernet->ether_shost));
+    snprintf(dst_mac, sizeof(dst_mac), "%s", mac_ntoa(ethernet->ether_dhost));
+    snprintf(src_mac, sizeof(src_mac), "%s", mac_ntoa(ethernet->ether_shost));
     type = ntohs(ethernet->ether_type);
     
     //print
