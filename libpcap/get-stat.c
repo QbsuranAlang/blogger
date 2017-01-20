@@ -33,6 +33,34 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }//end if
     
+    //generate bpf filter
+    bpf_u_int32 net, mask;
+    struct bpf_program fcode;
+
+    //get network and mask
+    if(-1 == pcap_lookupnet(device, &net, &mask, errbuf)) {
+        fprintf(stderr, "pcap_lookupnet(): %s\n", errbuf);
+        mask = PCAP_NETMASK_UNKNOWN;
+    }//end if
+    
+    //compile filter
+    if(-1 == pcap_compile(handle, &fcode, "tcp or udp", 1, mask)) {
+        fprintf(stderr, "pcap_compile(): %s\n", pcap_geterr(handle));
+        pcap_close(handle);
+        exit(1);
+    }//end if
+    
+    //set filter
+    if(-1 == pcap_setfilter(handle, &fcode)) {
+        fprintf(stderr, "pcap_pcap_setfilter(): %s\n", pcap_geterr(handle));
+        pcap_freecode(&fcode);
+        pcap_close(handle);
+        exit(1);
+    }//end if
+    
+    //free bpf code
+    pcap_freecode(&fcode);
+    
     //start capture
     int capture = 0;
     pcap_dispatch(handle, -1, pcap_callback, (u_char *)&capture);
