@@ -14,7 +14,8 @@ PROGS = list-devices \
 	dump-icmp \
 	send-a-frame \
 	offline-filter \
-	list-data-link-type
+	list-data-link-type \
+	get-stat \
 
 PCAP_DIR = /usr/local/opt/libpcap
 CFLAGS = -I$(PCAP_DIR)/include -Wall -std=gnu99
