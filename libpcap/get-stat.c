@@ -34,7 +34,8 @@ int main(int argc, const char * argv[]) {
     }//end if
     
     //start capture
-    pcap_dispatch(handle, -1, pcap_callback, NULL);
+    int capture = 0;
+    pcap_dispatch(handle, -1, pcap_callback, (u_char *)&capture);
 
     //get stat
     struct pcap_stat ps;
@@ -42,7 +43,8 @@ int main(int argc, const char * argv[]) {
         fprintf(stderr, "pcap_stats(): %s\n", pcap_geterr(handle));
     }//end if
     else {
-        printf("Receive: %d\n", ps.ps_recv);
+        printf("Receive: %d\n", capture);
+        printf("Receive by filter: %d\n", ps.ps_recv);
         printf("Drop by kernel: %d\n", ps.ps_drop);
         printf("Drop by interface: %d\n", ps.ps_ifdrop);
     }//end else
@@ -54,5 +56,7 @@ int main(int argc, const char * argv[]) {
 }//end main
 
 static void pcap_callback(u_char *arg, const struct pcap_pkthdr *header, const u_char *content) {
-    return; /* do nothing */
+    int *capture = (int *)arg;
+    (*capture)++;
+    return;
 }//end pcap_callback
