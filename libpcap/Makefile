@@ -13,7 +13,8 @@ PROGS = list-devices \
 	dump-tcp-and-udp \
 	dump-icmp \
 	send-a-frame \
-	offline-filter
+	offline-filter \
+	list-data-link-type
 
 PCAP_DIR = /usr/local/opt/libpcap
 CFLAGS = -I$(PCAP_DIR)/include -Wall -std=gnu99
