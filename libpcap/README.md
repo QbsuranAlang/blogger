@@ -33,3 +33,6 @@ Dump TCP segment and UDP datagram header.
 
 ## dump-icmp.c
 Dump ICMP datagram header.
+
+## dump-wol.c
+Dump wake-on-lan frame and datagram header.
