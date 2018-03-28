@@ -36,3 +36,6 @@ Dump ICMP datagram header.
 
 ## dump-wol.c
 Dump wake-on-lan frame and datagram header.
+
+## dump-dns.c
+Dump DNS header and message.

@@ -16,7 +16,8 @@ PROGS = list-devices \
 	offline-filter \
 	list-data-link-type \
 	get-stat \
-	dump-wol
+	dump-wol \
+	dump-dns
 
 PCAP_DIR = /usr/local/opt/libpcap
 CFLAGS = -I$(PCAP_DIR)/include -Wall -std=gnu99
